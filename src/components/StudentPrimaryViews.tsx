@@ -30,6 +30,7 @@ import {
   calculateProgressPercentage,
   calculateTotalSolvedAcrossPlatforms,
 } from '../utils/logic';
+import { syncPlatform, extractHandle } from '../utils/codingPlatformService';
 import { CompanyMonogram, WarmIllustration } from './Illustrations';
 
 interface StudentPrimaryViewsProps {
@@ -119,26 +120,115 @@ export const StudentPrimaryViews: React.FC<StudentPrimaryViewsProps> = ({
     );
   }
 
-  const handleRefreshPlatform = (plat: CodingPlatformProfile) => {
+  const handleRefreshPlatform = async (plat: CodingPlatformProfile) => {
     setSyncingPlatformId(plat.id);
-    setTimeout(() => {
-      const updatedPlatforms = student.platforms.map((p) =>
-        p.id === plat.id
-          ? { ...p, solvedCount: p.solvedCount + 1, lastSynced: 'Just now' }
-          : p
-      );
-      onUpdateStudent({
-        ...student,
-        platforms: updatedPlatforms,
-        totalSolved: calculateTotalSolvedAcrossPlatforms(updatedPlatforms),
-      });
+    try {
+      const result = await syncPlatform(plat.platform, plat.url);
+      if (result.success) {
+        const updatedPlatforms = student.platforms.map((p) =>
+          p.id === plat.id
+            ? {
+                ...p,
+                solvedCount: result.solvedCount > 0 ? result.solvedCount : p.solvedCount,
+                lastSynced: 'Just now',
+                syncStatus: 'synced' as const,
+                rating: result.rating || p.rating,
+                rank: result.rank || p.rank,
+                secondaryValue: result.rank || (result.rating ? `${result.rating} Rating` : p.secondaryValue),
+              }
+            : p
+        );
+
+        // Update difficulty counts if LeetCode returns breakdown
+        let easy = student.problemsEasy;
+        let med = student.problemsMedium;
+        let hard = student.problemsHard;
+        if (plat.platform === 'LeetCode' && result.easySolved !== undefined) {
+          easy = result.easySolved;
+          med = result.mediumSolved ?? med;
+          hard = result.hardSolved ?? hard;
+        }
+
+        const newTotal = calculateTotalSolvedAcrossPlatforms(updatedPlatforms);
+
+        onUpdateStudent({
+          ...student,
+          platforms: updatedPlatforms,
+          totalSolved: newTotal,
+          problemsSolved: newTotal,
+          problemsEasy: easy,
+          problemsMedium: med,
+          problemsHard: hard,
+        });
+
+        onTriggerToast(
+          'success',
+          `${plat.platform} Live Sync Complete`,
+          `Fetched live stats for ${result.handle}: ${result.solvedCount} problems verified.`
+        );
+      } else {
+        onTriggerToast(
+          'error',
+          `${plat.platform} Sync Notice`,
+          result.error || 'Could not reach live platform API.'
+        );
+      }
+    } catch (err: any) {
+      onTriggerToast('error', `${plat.platform} Sync Failed`, err.message);
+    } finally {
       setSyncingPlatformId(null);
-      onTriggerToast(
-        'success',
-        `${plat.platform} Synced`,
-        `Fetched latest count (${plat.solvedCount + 1} solved).`
-      );
-    }, 300);
+    }
+  };
+
+  const handleSyncAllPlatforms = async () => {
+    onTriggerToast('info', 'Live Batch Sync Started', 'Querying LeetCode, Codeforces, GitHub and CodeChef APIs...');
+    let currentUpdatedPlatforms = [...student.platforms];
+    let easy = student.problemsEasy;
+    let med = student.problemsMedium;
+    let hard = student.problemsHard;
+
+    for (const plat of student.platforms) {
+      if (['LeetCode', 'Codeforces', 'CodeChef', 'GitHub'].includes(plat.platform)) {
+        try {
+          const res = await syncPlatform(plat.platform, plat.url);
+          if (res.success) {
+            currentUpdatedPlatforms = currentUpdatedPlatforms.map((p) =>
+              p.id === plat.id
+                ? {
+                    ...p,
+                    solvedCount: res.solvedCount > 0 ? res.solvedCount : p.solvedCount,
+                    lastSynced: 'Just now',
+                    syncStatus: 'synced' as const,
+                    rating: res.rating || p.rating,
+                    rank: res.rank || p.rank,
+                    secondaryValue: res.rank || (res.rating ? `${res.rating} Rating` : p.secondaryValue),
+                  }
+                : p
+            );
+            if (plat.platform === 'LeetCode' && res.easySolved !== undefined) {
+              easy = res.easySolved;
+              med = res.mediumSolved ?? med;
+              hard = res.hardSolved ?? hard;
+            }
+          }
+        } catch {
+          // Continue to next platform
+        }
+      }
+    }
+
+    const newTotal = calculateTotalSolvedAcrossPlatforms(currentUpdatedPlatforms);
+    onUpdateStudent({
+      ...student,
+      platforms: currentUpdatedPlatforms,
+      totalSolved: newTotal,
+      problemsSolved: newTotal,
+      problemsEasy: easy,
+      problemsMedium: med,
+      problemsHard: hard,
+    });
+
+    onTriggerToast('success', 'All Profiles Synced', `Total verified problem solves updated: ${newTotal}`);
   };
 
   const handleAddOtherPlatformSubmit = (e: React.FormEvent) => {
@@ -205,10 +295,11 @@ export const StudentPrimaryViews: React.FC<StudentPrimaryViewsProps> = ({
             <div className="flex items-center gap-2.5 self-start sm:self-center">
               <button
                 type="button"
-                onClick={() => onNavigateTab('coding-profiles')}
-                className="px-3.5 py-2 rounded-2xl bg-white/65 dark:bg-white/10 border border-[#1F4959]/15 text-xs font-semibold text-[#1F4959] dark:text-[#CFE0E3] hover:bg-[#1F4959] hover:text-white transition-colors min-h-[42px]"
+                onClick={handleSyncAllPlatforms}
+                className="px-3.5 py-2 rounded-2xl bg-white/65 dark:bg-white/10 border border-[#1F4959]/15 text-xs font-semibold text-[#1F4959] dark:text-[#CFE0E3] hover:bg-[#1F4959] hover:text-white transition-colors min-h-[42px] inline-flex items-center gap-1.5"
               >
-                Sync All Profiles
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Sync All Profiles</span>
               </button>
               <button
                 type="button"
