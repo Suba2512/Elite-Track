@@ -528,8 +528,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
                   type="button"
                   onClick={() => setCmdTargetType('all')}
                   className={`py-2.5 rounded-xl text-xs font-semibold transition-all min-h-[40px] ${cmdTargetType === 'all'
-                      ? 'bg-[#1F4959] text-white shadow-sm'
-                      : 'text-[#242424] dark:text-[#CFE0E3]'
+                    ? 'bg-[#1F4959] text-white shadow-sm'
+                    : 'text-[#242424] dark:text-[#CFE0E3]'
                     }`}
                 >
                   All 17 Students in Batch
@@ -538,8 +538,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
                   type="button"
                   onClick={() => setCmdTargetType('individual')}
                   className={`py-2.5 rounded-xl text-xs font-semibold transition-all min-h-[40px] ${cmdTargetType === 'individual'
-                      ? 'bg-[#1F4959] text-white shadow-sm'
-                      : 'text-[#242424] dark:text-[#CFE0E3]'
+                    ? 'bg-[#1F4959] text-white shadow-sm'
+                    : 'text-[#242424] dark:text-[#CFE0E3]'
                     }`}
                 >
                   Individual Student
@@ -790,115 +790,115 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
               {((discoveryStats?.sources && discoveryStats.sources.length > 0)
                 ? discoveryStats.sources
                 : [
-                    {
-                      id: 'src-devpost',
-                      name: 'Devpost Hackathons',
-                      platform: 'Devpost',
-                      source_type: 'hackathon',
-                      fetching_method: 'Permitted Public Listing Extraction & RSS / JSON endpoints',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 2,
-                      verified_records: 2,
-                      expired_records: 0,
-                      duplicate_records: 0,
-                      invalid_links: 0,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                    {
-                      id: 'src-mycareernet',
-                      name: 'MyCareernet Challenges',
-                      platform: 'MyCareernet',
-                      source_type: 'hackathon',
-                      fetching_method: 'Public Contests Listing Inspection & Corporate Challenge Extraction',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 4,
-                      verified_records: 3,
-                      expired_records: 1,
-                      duplicate_records: 0,
-                      invalid_links: 1,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                    {
-                      id: 'src-codeforces',
-                      name: 'Codeforces Contests',
-                      platform: 'Codeforces',
-                      source_type: 'contest',
-                      fetching_method: 'Official Codeforces API (https://codeforces.com/api/contest.list)',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 1,
-                      verified_records: 1,
-                      expired_records: 0,
-                      duplicate_records: 0,
-                      invalid_links: 0,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                    {
-                      id: 'src-leetcode',
-                      name: 'LeetCode Weekly & Biweekly',
-                      platform: 'LeetCode',
-                      source_type: 'contest',
-                      fetching_method: 'Official Public Contest Feed Extraction & Mentor Manual Fallback',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 1,
-                      verified_records: 1,
-                      expired_records: 0,
-                      duplicate_records: 0,
-                      invalid_links: 0,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                    {
-                      id: 'src-codechef',
-                      name: 'CodeChef Starters',
-                      platform: 'CodeChef',
-                      source_type: 'contest',
-                      fetching_method: 'Official Public Contests Page Extraction & Starters Feeds',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 1,
-                      verified_records: 1,
-                      expired_records: 0,
-                      duplicate_records: 0,
-                      invalid_links: 0,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                    {
-                      id: 'src-codegalatta',
-                      name: 'CodeGalatta Contests',
-                      platform: 'CodeGalatta',
-                      source_type: 'contest',
-                      fetching_method: 'Public Collegiate Challenge Listings & Mentor Manual Fallback',
-                      integration_status: 'Active',
-                      last_fetch_attempt: new Date().toISOString(),
-                      last_successful_fetch: new Date().toISOString(),
-                      records_fetched: 1,
-                      verified_records: 1,
-                      expired_records: 0,
-                      duplicate_records: 0,
-                      invalid_links: 0,
-                      manual_verification_required: 0,
-                      last_error_message: null,
-                      is_operational: true,
-                    },
-                  ]
+                  {
+                    id: 'src-devpost',
+                    name: 'Devpost Hackathons',
+                    platform: 'Devpost',
+                    source_type: 'hackathon',
+                    fetching_method: 'Permitted Public Listing Extraction & RSS / JSON endpoints',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 2,
+                    verified_records: 2,
+                    expired_records: 0,
+                    duplicate_records: 0,
+                    invalid_links: 0,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                  {
+                    id: 'src-mycareernet',
+                    name: 'MyCareernet Challenges',
+                    platform: 'MyCareernet',
+                    source_type: 'hackathon',
+                    fetching_method: 'Public Contests Listing Inspection & Corporate Challenge Extraction',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 4,
+                    verified_records: 3,
+                    expired_records: 1,
+                    duplicate_records: 0,
+                    invalid_links: 1,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                  {
+                    id: 'src-codeforces',
+                    name: 'Codeforces Contests',
+                    platform: 'Codeforces',
+                    source_type: 'contest',
+                    fetching_method: 'Official Codeforces API (https://codeforces.com/api/contest.list)',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 1,
+                    verified_records: 1,
+                    expired_records: 0,
+                    duplicate_records: 0,
+                    invalid_links: 0,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                  {
+                    id: 'src-leetcode',
+                    name: 'LeetCode Weekly & Biweekly',
+                    platform: 'LeetCode',
+                    source_type: 'contest',
+                    fetching_method: 'Official Public Contest Feed Extraction & Mentor Manual Fallback',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 1,
+                    verified_records: 1,
+                    expired_records: 0,
+                    duplicate_records: 0,
+                    invalid_links: 0,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                  {
+                    id: 'src-codechef',
+                    name: 'CodeChef Starters',
+                    platform: 'CodeChef',
+                    source_type: 'contest',
+                    fetching_method: 'Official Public Contests Page Extraction & Starters Feeds',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 1,
+                    verified_records: 1,
+                    expired_records: 0,
+                    duplicate_records: 0,
+                    invalid_links: 0,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                  {
+                    id: 'src-codegalatta',
+                    name: 'CodeGalatta Contests',
+                    platform: 'CodeGalatta',
+                    source_type: 'contest',
+                    fetching_method: 'Public Collegiate Challenge Listings & Mentor Manual Fallback',
+                    integration_status: 'Active',
+                    last_fetch_attempt: new Date().toISOString(),
+                    last_successful_fetch: new Date().toISOString(),
+                    records_fetched: 1,
+                    verified_records: 1,
+                    expired_records: 0,
+                    duplicate_records: 0,
+                    invalid_links: 0,
+                    manual_verification_required: 0,
+                    last_error_message: null,
+                    is_operational: true,
+                  },
+                ]
               ).map((src: any) => (
                 <div
                   key={src.id}
@@ -919,20 +919,18 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          src.integration_status === 'Active'
-                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                            : src.integration_status === 'Temporarily unavailable'
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${src.integration_status === 'Active'
+                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                          : src.integration_status === 'Temporarily unavailable'
                             ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200'
                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200'
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            src.integration_status === 'Active'
-                              ? 'bg-emerald-500 animate-pulse'
-                              : 'bg-amber-500'
-                          }`}
+                          className={`w-1.5 h-1.5 rounded-full ${src.integration_status === 'Active'
+                            ? 'bg-emerald-500 animate-pulse'
+                            : 'bg-amber-500'
+                            }`}
                         />
                         <span>{src.integration_status}</span>
                       </span>
@@ -1035,8 +1033,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
               type="button"
               onClick={() => setPipelineFilter(st)}
               className={`px-4 py-2 rounded-xl text-xs font-semibold transition-colors min-h-[38px] ${pipelineFilter === st
-                  ? 'bg-[#1F4959] text-white'
-                  : 'glass-card hover:bg-white/80'
+                ? 'bg-[#1F4959] text-white'
+                : 'glass-card hover:bg-white/80'
                 }`}
             >
               {st} ({st === 'All' ? opportunities.length : opportunities.filter((o) => o.pipelineStage === st).length})
@@ -1647,8 +1645,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
                 type="button"
                 onClick={() => setStudentStatusFilter(st)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors min-h-[36px] ${studentStatusFilter === st
-                    ? 'bg-[#1F4959] text-white'
-                    : 'bg-white/60 dark:bg-white/5 hover:bg-white'
+                  ? 'bg-[#1F4959] text-white'
+                  : 'bg-white/60 dark:bg-white/5 hover:bg-white'
                   }`}
               >
                 {st}
@@ -1698,10 +1696,10 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
                     <td className="py-3.5 px-4">
                       <span
                         className={`font-semibold ${stu.activeStatus === 'Active this week'
-                            ? 'text-[#1F4959] dark:text-[#CFE0E3]'
-                            : stu.activeStatus === 'On track'
-                              ? 'text-[#D9A441]'
-                              : 'text-[#C9825B]'
+                          ? 'text-[#1F4959] dark:text-[#CFE0E3]'
+                          : stu.activeStatus === 'On track'
+                            ? 'text-[#D9A441]'
+                            : 'text-[#C9825B]'
                           }`}
                       >
                         {stu.activeStatus}
@@ -2074,207 +2072,15 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
     );
   }
 
-  // ============================================================================
-  // 9. LEADERBOARDS (Faculty View Only - 5 Approved Dimensions)
-  // ============================================================================
-  if (activeTab === 'leaderboards') {
-    // Scoring Formula: Easy*1 + Med*3 + Hard*5 + Streak*2 (GitHub commits strictly excluded)
-    const computeScore = (s: StudentRecord) => {
-      const easy = s.problemsEasy || Math.floor((s.problemsSolved || 0) * 0.45);
-      const med = s.problemsMedium || Math.floor((s.problemsSolved || 0) * 0.40);
-      const hard = s.problemsHard || Math.max(0, (s.problemsSolved || 0) - easy - med);
-      return easy * 1 + med * 3 + hard * 5 + (s.streakDays || 0) * 2;
-    };
-
-    const sortedStudents = [...students].sort((a, b) => computeScore(b) - computeScore(a));
-
-    return (
-      <div className="space-y-6">
-        <section className="glass-card rounded-[26px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D9A441]/20 border border-[#D9A441]/40 text-[#1F4959] dark:text-[#E8D8C3] text-xs font-bold mb-2">
-              <Trophy className="w-3.5 h-3.5 text-[#D9A441]" />
-              <span>Faculty Consolidated View Only</span>
-            </div>
-            <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-              Batch of 17 — Performance Leaderboards
-            </h1>
-            <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
-              Rankings weighted by verified problem difficulty (Easy ×1, Medium ×3, Hard ×5) + Consistency (Streak ×2). 
-              <span className="font-semibold text-[#1F4959] dark:text-[#CFE0E3]"> GitHub commits strictly excluded from DSA scores.</span>
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => {
-                exportConsolidatedBatchWorkbook(students, commands);
-                onTriggerToast('success', 'Leaderboard Exported', 'Downloaded full 17-student batch master workbook (.xlsx).');
-              }}
-              className="px-4 py-2.5 rounded-2xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] transition-colors inline-flex items-center gap-1.5 min-h-[42px] shadow-sm"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-[#D9A441]" />
-              <span>Export Leaderboard (.xlsx)</span>
-            </button>
-          </div>
-        </section>
-
-        {/* Podium for Top 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {sortedStudents.slice(0, 3).map((stu, idx) => {
-            const score = computeScore(stu);
-            const medals = [
-              { color: 'bg-[#D9A441]', border: 'border-[#D9A441]', label: '1st Rank · Gold', ring: 'ring-amber-400' },
-              { color: 'bg-[#5C7C89]', border: 'border-[#5C7C89]', label: '2nd Rank · Silver', ring: 'ring-slate-300' },
-              { color: 'bg-[#C9825B]', border: 'border-[#C9825B]', label: '3rd Rank · Bronze', ring: 'ring-amber-700' },
-            ];
-            const medal = medals[idx];
-            return (
-              <div
-                key={stu.id}
-                className={`glass-card rounded-[24px] p-5 relative overflow-hidden border-2 ${medal.border}`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2.5 py-1 rounded-full text-white text-[11px] font-bold ${medal.color}`}>
-                    {medal.label}
-                  </span>
-                  <span className="text-2xl font-black font-mono-num text-[#1F4959] dark:text-[#CFE0E3]">
-                    #{idx + 1}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <img
-                    src={stu.avatarUrl}
-                    alt={stu.name}
-                    className="w-12 h-12 rounded-2xl object-cover border-2 border-white/60 shadow-sm"
-                  />
-                  <div>
-                    <h3 className="font-bold text-sm text-[#1F4959] dark:text-[#F6F1E9]">{stu.name}</h3>
-                    <p className="text-xs text-[#5C7C89] font-mono-num">{stu.rollNo} · {stu.department}</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-3 border-t border-[#1F4959]/10 grid grid-cols-3 gap-2 text-center">
-                  <div>
-                    <p className="text-[10px] text-[#5C7C89]">Total Solved</p>
-                    <p className="font-bold text-xs font-mono-num text-[#1F4959] dark:text-[#CFE0E3]">{stu.problemsSolved}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-[#5C7C89]">Streak</p>
-                    <p className="font-bold text-xs font-mono-num text-[#C9825B]">{stu.streakDays}d</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-[#5C7C89]">Score</p>
-                    <p className="font-bold text-xs font-mono-num text-[#D9A441]">{score}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Master Leaderboard Table */}
-        <section className="glass-card rounded-[26px] p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-              Complete Batch Ranking (17 Students)
-            </h2>
-            <span className="text-xs text-[#5C7C89]">
-              Auto-refreshed via synchronized platform feeds
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-[#1F4959]/15 text-[#5C7C89]">
-                  <th className="py-3 px-3 font-semibold">Rank</th>
-                  <th className="py-3 px-3 font-semibold">Student</th>
-                  <th className="py-3 px-3 font-semibold">Roll No</th>
-                  <th className="py-3 px-3 font-semibold">Dept</th>
-                  <th className="py-3 px-3 font-semibold text-center">Problems Solved</th>
-                  <th className="py-3 px-3 font-semibold text-center">Streak</th>
-                  <th className="py-3 px-3 font-semibold text-center">Hackathons</th>
-                  <th className="py-3 px-3 font-semibold text-right">Weighted Score</th>
-                  <th className="py-3 px-3 font-semibold text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1F4959]/10">
-                {sortedStudents.map((stu, index) => {
-                  const score = computeScore(stu);
-                  return (
-                    <tr
-                      key={stu.id}
-                      className="hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
-                    >
-                      <td className="py-3 px-3 font-mono-num font-bold">
-                        {index === 0 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#D9A441] text-white font-bold text-[10px]">#1</span>}
-                        {index === 1 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#5C7C89] text-white font-bold text-[10px]">#2</span>}
-                        {index === 2 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#C9825B] text-white font-bold text-[10px]">#3</span>}
-                        {index > 2 && <span className="text-[#5C7C89]">#{index + 1}</span>}
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2">
-                          <img src={stu.avatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover" />
-                          <span className="font-semibold text-[#1F4959] dark:text-[#F6F1E9]">{stu.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 font-mono-num text-[#5C7C89]">{stu.rollNo}</td>
-                      <td className="py-3 px-3 font-medium">{stu.department}</td>
-                      <td className="py-3 px-3 font-mono-num text-center font-bold text-[#1F4959] dark:text-[#CFE0E3]">
-                        {stu.problemsSolved}
-                      </td>
-                      <td className="py-3 px-3 font-mono-num text-center font-bold text-[#C9825B]">
-                        {stu.streakDays}d
-                      </td>
-                      <td className="py-3 px-3 font-mono-num text-center">
-                        {stu.contestsAttended}
-                      </td>
-                      <td className="py-3 px-3 font-mono-num font-bold text-right text-[#D9A441]">
-                        {score} pts
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onSelectStudent(stu.id);
-                            onNavigateTab('student-detail');
-                          }}
-                          className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-white/10 hover:bg-[#1F4959] hover:text-white transition-colors text-[11px] font-semibold border border-[#1F4959]/15"
-                        >
-                          View Dossier
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // ============================================================================
-  // 10. SETTINGS / UNIFIED FACULTY COHORT MANAGEMENT (12 Faculty Members)
-  // ============================================================================
   return (
     <div className="space-y-6">
-      <section className="glass-card rounded-[26px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1F4959]/10 border border-[#1F4959]/20 text-[#1F4959] dark:text-[#CFE0E3] text-xs font-bold mb-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#1F4959]" />
-            <span>Unified Permission Matrix (Rule of 12)</span>
-          </div>
-          <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-            Faculty Cohort & Access Control
-          </h1>
-          <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
-            All 12 faculty members—Mentor Ganesh Sir, Principal Sir, Dean R&D, HODs, and senior faculty—operate with identical administrative authority and unified dashboard access.
-          </p>
-        </div>
+      <section className="glass-card rounded-[26px] p-6">
+        <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+          Mentor & HOD Roles Management
+        </h1>
+        <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
+          Manage administrative permissions for issuing commands and verifying external contest opportunities.
+        </p>
       </section>
 
       <div className="glass-card rounded-[26px] p-6 space-y-4">
