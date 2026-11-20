@@ -105,9 +105,15 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
       }
       if (verification.role === 'faculty') {
         onSelectRole('admin');
+        localStorage.setItem('elite_track_auth', 'authenticated');
+        localStorage.setItem('elite_track_role', 'admin');
+        localStorage.setItem('elite_track_email', email);
         onTriggerToast('success', 'Authenticated with Google', `Welcome, ${verification.name || 'Faculty Member'}!`);
       } else {
         onSelectRole('student');
+        localStorage.setItem('elite_track_auth', 'authenticated');
+        localStorage.setItem('elite_track_role', 'student');
+        localStorage.setItem('elite_track_email', email);
         onTriggerToast('success', 'Authenticated with Google', 'Welcome, Ananya Sharma!');
       }
       onNavigateAuth('authenticated');
@@ -135,6 +141,9 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
     setLoginError('');
     const assignedRole = verification.role === 'faculty' ? 'admin' : 'student';
     onSelectRole(assignedRole);
+    localStorage.setItem('elite_track_auth', 'authenticated');
+    localStorage.setItem('elite_track_role', assignedRole);
+    localStorage.setItem('elite_track_email', email);
 
     onTriggerToast(
       'success',

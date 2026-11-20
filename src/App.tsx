@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Home,
   Layers,
+  LogOut,
   Moon,
   Send,
   Settings,
@@ -67,23 +68,40 @@ import { CompanyMonogram } from './components/Illustrations';
 import { api, DiscoveryObservabilityStats } from './utils/apiClient';
 
 export default function App() {
-  // Check URL params for ?autostart=1 or ?role=admin
+  // Check localStorage for active session, otherwise default to login
   const getInitialAuth = (): AuthScreen => {
     if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('elite_track_auth');
+      if (stored === 'authenticated') return 'authenticated';
       const params = new URLSearchParams(window.location.search);
       if (params.get('autostart') === '1') return 'authenticated';
       if (params.get('auth') === 'splash') return 'splash';
-      if (params.get('auth') === 'login') return 'login';
       if (params.get('auth') === 'onboarding') return 'onboarding';
     }
-    return 'authenticated';
+    return 'login';
+  };
+
+  const getInitialRole = (): UserRole => {
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('elite_track_role');
+      if (storedRole === 'admin' || storedRole === 'faculty') return 'admin';
+      if (storedRole === 'student') return 'student';
+    }
+    return 'student';
   };
 
   const [authScreen, setAuthScreen] = useState<AuthScreen>(getInitialAuth);
-  const [role, setRole] = useState<UserRole>('student');
+  const [role, setRole] = useState<UserRole>(getInitialRole);
   const [studentTab, setStudentTab] = useState<StudentTab>('home');
   const [adminTab, setAdminTab] = useState<AdminTab>('dashboard');
   const [darkMode, setDarkMode] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('elite_track_auth');
+    localStorage.removeItem('elite_track_role');
+    localStorage.removeItem('elite_track_email');
+    setAuthScreen('login');
+  };
 
   // Core Shared Domain State (End-to-End Wired between Student and Mentor/Admin)
   const [students, setStudents] = useState<StudentRecord[]>(INITIAL_STUDENTS);
@@ -480,27 +498,6 @@ export default function App() {
       {/* If viewing Auth or Onboarding screens */}
       {authScreen !== 'authenticated' ? (
         <div className="relative">
-          {/* Quick Floating Switcher Bar for Reviewers to Jump Anywhere */}
-          <div className="max-w-6xl mx-auto pt-4 px-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => setAuthScreen('authenticated')}
-                className="px-3 py-1.5 rounded-xl bg-[#1F4959] text-white font-semibold"
-              >
-                Skip to Live App →
-              </button>
-              <button
-                type="button"
-                onClick={() => setSystemState('design-system')}
-                className="px-3 py-1.5 rounded-xl glass-card font-semibold"
-              >
-                Design System & Edge States
-              </button>
-            </div>
-            <PWAInstallButton compact />
-          </div>
-
           <AuthAndOnboarding
             screen={authScreen}
             role={role}
@@ -582,26 +579,39 @@ export default function App() {
               </nav>
             )}
 
-            {/* Zone 3: Primary Action */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* Zone 3: Active User Profile & Sign Out */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/70 dark:bg-white/10 border border-[#1F4959]/15 shadow-sm">
+                <div className="w-6 h-6 rounded-full bg-[#1F4959] text-[#CFE0E3] flex items-center justify-center text-xs font-bold font-mono">
+                  {role === 'admin' ? 'F' : 'S'}
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-bold leading-tight text-[#1F4959] dark:text-[#F6F1E9]">
+                    {role === 'admin' ? 'Faculty Portal' : 'Ananya Sharma'}
+                  </p>
+                  <p className="text-[10px] text-[#C9825B] leading-tight">
+                    {role === 'admin' ? 'Full Batch Access' : '22CS001 · Elite Batch'}
+                  </p>
+                </div>
+              </div>
+
               <button
                 type="button"
-                onClick={() => {
-                  const nextRole = role === 'student' ? 'admin' : 'student';
-                  setRole(nextRole);
-                  triggerToast(
-                    'info',
-                    nextRole === 'admin'
-                      ? 'Switched to Mentor View (Ganesh Sir)'
-                      : 'Switched to Student View (Ananya)',
-                    nextRole === 'admin'
-                      ? 'Issue commands, approve opportunities, or view all 17 students.'
-                      : 'Viewing personal coding story rings and active commands.'
-                  );
-                }}
-                className="px-3.5 py-2 rounded-xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] transition-colors whitespace-nowrap shrink-0 min-h-[38px]"
+                onClick={() => setDarkMode(!darkMode)}
+                aria-label={darkMode ? 'Switch to warm light theme' : 'Switch to deep petrol dark theme'}
+                className="p-2 rounded-xl bg-white/60 dark:bg-white/10 hover:bg-[#1F4959] hover:text-white transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center border border-[#1F4959]/10"
               >
-                {role === 'student' ? 'Switch to Ganesh Sir (Admin)' : 'Switch to Student View'}
+                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="px-3.5 py-2 rounded-xl bg-white/90 dark:bg-white/10 hover:bg-rose-600 hover:text-white text-[#1F4959] dark:text-[#CFE0E3] text-xs font-bold border border-[#1F4959]/20 transition-all flex items-center gap-1.5 min-h-[38px] shadow-sm"
+                title="Sign out of Elite Track"
+              >
+                <LogOut className="w-3.5 h-3.5 text-rose-500 hover:text-white" />
+                <span>Sign Out</span>
               </button>
             </div>
           </header>
@@ -617,16 +627,8 @@ export default function App() {
               <div className="glass-card rounded-[24px] p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#1F4959] dark:text-[#CFE0E3]">
-                    {role === 'student' ? 'Student Screens (10)' : 'Mentor / HOD Screens (9)'}
+                    {role === 'student' ? 'Student Workspace' : 'Faculty Cohort Hub'}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setDarkMode(!darkMode)}
-                    aria-label={darkMode ? 'Switch to warm light theme' : 'Switch to deep petrol dark theme'}
-                    className="p-2 rounded-xl bg-white/60 dark:bg-white/10 hover:bg-[#1F4959] hover:text-white transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
-                  >
-                    {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                  </button>
                 </div>
 
                 {/* Desktop Vertical Nav List */}
@@ -725,41 +727,18 @@ export default function App() {
                 )}
               </div>
 
-              {/* Deliverable Shortcuts: Design System, Onboarding, Auth & PWA Install */}
-              <div className="glass-card rounded-[24px] p-4 space-y-2.5">
-                <p className="text-[11px] font-bold text-[#C9825B]">
-                  Design Deliverables & Flows
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setSystemState('design-system')}
-                  className="w-full py-2 px-3 rounded-xl bg-[#C9825B]/15 text-[#8F4F32] dark:text-[#E8D8C3] hover:bg-[#C9825B] hover:text-white text-xs font-semibold transition-colors text-left flex items-center justify-between min-h-[38px]"
-                >
-                  <span>01. UI Kit & Error States</span>
-                  <span>→</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRole('student');
-                    setAuthScreen('onboarding');
-                  }}
-                  className="w-full py-2 px-3 rounded-xl bg-white/55 dark:bg-white/5 hover:bg-[#1F4959] hover:text-white text-xs font-semibold transition-colors text-left flex items-center justify-between min-h-[38px]"
-                >
-                  <span>02. 6-Step Onboarding</span>
-                  <span>→</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAuthScreen('login')}
-                  className="w-full py-2 px-3 rounded-xl bg-white/55 dark:bg-white/5 hover:bg-[#1F4959] hover:text-white text-xs font-semibold transition-colors text-left flex items-center justify-between min-h-[38px]"
-                >
-                  <span>03. Auth & Splash Flows</span>
-                  <span>→</span>
-                </button>
-                <div className="pt-1">
-                  <PWAInstallButton />
+              {/* App Status & Mobile PWA */}
+              <div className="glass-card rounded-[24px] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#1F4959] dark:text-[#CFE0E3] uppercase tracking-wider">
+                    Mobile Experience
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
+                <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3] leading-relaxed">
+                  Install Elite Track as a native PWA on Android & iOS for quick daily check-ins.
+                </p>
+                <PWAInstallButton />
               </div>
             </aside>
 
@@ -812,7 +791,7 @@ export default function App() {
                     onNavigateTab={setStudentTab}
                     darkMode={darkMode}
                     onToggleDarkMode={() => setDarkMode(!darkMode)}
-                    onLogout={() => setAuthScreen('login')}
+                    onLogout={handleLogout}
                     onTriggerToast={triggerToast}
                     onTriggerSystemState={setSystemState}
                     onUpdateParticipationStatus={handleUpdateParticipationStatus}
