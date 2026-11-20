@@ -990,6 +990,7 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
                 { label: 'Ganesh Sir (Mentor)', mail: 'ganesh@uniqshift.com', role: 'admin' as const },
                 { label: 'Principal Sir', mail: 'principal@nec.edu.in', role: 'admin' as const },
                 { label: 'HOD CSE', mail: 'hodcse@nec.edu.in', role: 'admin' as const },
+                { label: 'Dr. J. Naskath', mail: 'naskat@nec.edu.in', role: 'admin' as const },
                 { label: 'Ananya (Student)', mail: 'ananya.22cs001@college.edu', role: 'student' as const },
               ].map((chip) => (
                 <button

@@ -2347,6 +2347,13 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
               dept: 'AI & Data Science',
               access: 'Unified Faculty Cohort · Full Batch Oversight',
             },
+            {
+              name: 'Dr. J. Naskath',
+              role: 'Associate Professor',
+              email: 'naskat@nec.edu.in',
+              dept: 'AI & Data Science',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
           ].map((faculty) => (
             <div
               key={faculty.email}

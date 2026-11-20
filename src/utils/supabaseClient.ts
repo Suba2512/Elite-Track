@@ -19,7 +19,7 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   : null;
 
 /**
- * Approved Faculty Allowlist for instant validation & fallback
+ * Approved Faculty Allowlist for instant validation & fallback (10 Approved Faculty)
  */
 export const PRE_REGISTERED_FACULTY_EMAILS = [
   'ganesh@uniqshift.com',
@@ -31,6 +31,7 @@ export const PRE_REGISTERED_FACULTY_EMAILS = [
   'bsp@nec.edu.in',
   'anithait@nec.edu.in',
   'rampriya-aids@nec.edu.in',
+  'naskat@nec.edu.in',
 ];
 
 /**
@@ -71,10 +72,22 @@ export async function verifyUserEmail(email: string): Promise<{ approved: boolea
 
   // 1. Check pre-registered faculty
   if (checkFacultyAllowlist(cleanEmail)) {
+    let facultyName = 'Faculty Member';
+    if (cleanEmail === 'ganesh@uniqshift.com') facultyName = 'Prof. Ganesh Sir';
+    else if (cleanEmail === 'principal@nec.edu.in') facultyName = 'Dr. K. Kalidasa Murugavel';
+    else if (cleanEmail === 'deanrd@nec.edu.in') facultyName = 'Dr. Shenbagavalli';
+    else if (cleanEmail === 'hodcse@nec.edu.in') facultyName = 'Dr. V. Gomathi';
+    else if (cleanEmail === 'hodai@nec.edu.in') facultyName = 'Dr. L. Jerart Julus';
+    else if (cleanEmail === 'hodit@nec.edu.in') facultyName = 'Dr. D. Manimegalai';
+    else if (cleanEmail === 'bsp@nec.edu.in') facultyName = 'Dr. B. Shanmuga Priya';
+    else if (cleanEmail === 'anithait@nec.edu.in') facultyName = 'Prof. Anitha';
+    else if (cleanEmail === 'rampriya-aids@nec.edu.in') facultyName = 'Prof. Rampriya';
+    else if (cleanEmail === 'naskat@nec.edu.in') facultyName = 'Dr. J. Naskath';
+
     return {
       approved: true,
       role: 'faculty',
-      name: cleanEmail === 'ganesh@uniqshift.com' ? 'Prof. Ganesh Sir' : 'Faculty Member',
+      name: facultyName,
     };
   }
 
@@ -83,7 +96,7 @@ export async function verifyUserEmail(email: string): Promise<{ approved: boolea
     try {
       const { data, error } = await supabase
         .from('approved_users')
-        .select('role, is_active')
+        .select('role, is_active, full_name')
         .eq('email', cleanEmail)
         .maybeSingle();
 
@@ -93,6 +106,7 @@ export async function verifyUserEmail(email: string): Promise<{ approved: boolea
         return {
           approved: true,
           role: data.role === 'student' ? 'student' : 'faculty',
+          name: data.full_name || undefined,
         };
       }
     } catch (e) {

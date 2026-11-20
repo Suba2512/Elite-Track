@@ -113,7 +113,7 @@ sequenceDiagram
 ```
 
 ### Initial Faculty Allowlist Pre-Registration
-The initial deployment seeds the following **9 verified faculty addresses** (no placeholder addresses added):
+The initial deployment seeds the following **10 verified faculty addresses** (no placeholder addresses added):
 1. `ganesh@uniqshift.com` (Mentor)
 2. `principal@nec.edu.in` (Principal Sir)
 3. `deanrd@nec.edu.in` (Dean R&D)
@@ -123,6 +123,7 @@ The initial deployment seeds the following **9 verified faculty addresses** (no 
 7. `bsp@nec.edu.in` (Senior Faculty)
 8. `anithait@nec.edu.in` (Senior Faculty - IT)
 9. `rampriya-aids@nec.edu.in` (Senior Faculty - AI&DS)
+10. `naskat@nec.edu.in` (Dr. J. Naskath - Associate Professor, AI&DS)
 
 *Super Admins can insert additional faculty records via the `/admin/dashboard` allowlist console without code changes.*
 

@@ -781,17 +781,18 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.bootstrap_initial_super_admin FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.bootstrap_initial_super_admin TO service_role;
 
--- 7. PRE-SEED 9 APPROVED FACULTY MEMBERS
+-- 7. PRE-SEED 10 APPROVED FACULTY MEMBERS
 INSERT INTO public.approved_users (email, role, full_name, notes) VALUES
-  ('ganesh@uniqshift.com', 'faculty', 'Ganesh Sir', 'Mentor'),
-  ('principal@nec.edu.in', 'faculty', 'Principal Sir', 'Principal'),
-  ('deanrd@nec.edu.in', 'faculty', 'Dean R&D', 'Dean Research & Development'),
-  ('hodcse@nec.edu.in', 'faculty', 'HOD CSE', 'Head of Department - Computer Science & Engineering'),
-  ('hodai@nec.edu.in', 'faculty', 'HOD AI&DS', 'Head of Department - Artificial Intelligence & Data Science'),
-  ('hodit@nec.edu.in', 'faculty', 'HOD IT', 'Head of Department - Information Technology'),
-  ('bsp@nec.edu.in', 'faculty', 'Prof. B.S.P.', 'Senior Faculty'),
+  ('ganesh@uniqshift.com', 'faculty', 'Prof. Ganesh Sir', 'Lead Placement Mentor'),
+  ('principal@nec.edu.in', 'faculty', 'Dr. K. Kalidasa Murugavel', 'Principal'),
+  ('deanrd@nec.edu.in', 'faculty', 'Dr. Shenbagavalli', 'Dean R&D'),
+  ('hodcse@nec.edu.in', 'faculty', 'Dr. V. Gomathi', 'HOD - CSE'),
+  ('hodai@nec.edu.in', 'faculty', 'Dr. L. Jerart Julus', 'HOD - AI&DS'),
+  ('hodit@nec.edu.in', 'faculty', 'Dr. D. Manimegalai', 'HOD - IT'),
+  ('bsp@nec.edu.in', 'faculty', 'Dr. B. Shanmuga Priya', 'Associate Professor - IT'),
   ('anithait@nec.edu.in', 'faculty', 'Prof. Anitha', 'Senior Faculty - IT'),
-  ('rampriya-aids@nec.edu.in', 'faculty', 'Prof. Rampriya', 'Senior Faculty - AI&DS')
+  ('rampriya-aids@nec.edu.in', 'faculty', 'Prof. Rampriya', 'Senior Faculty - AI&DS'),
+  ('naskat@nec.edu.in', 'faculty', 'Dr. J. Naskath', 'Associate Professor - AI&DS')
 ON CONFLICT (email) DO NOTHING;
 
 -- 8. ROW LEVEL SECURITY POLICIES ACROSS ALL 23 TABLES
