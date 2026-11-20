@@ -1,0 +1,6 @@
+{
+  "name": "Elite Track",
+  "description": "Placement-prep tracking platform for a college batch of 17 students, mentors, and HODs with coding profile sync, mentor commands, and verified hackathon opportunities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
