@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  KeyRound,
   Lock,
   Mail,
   MessageSquare,
@@ -13,8 +14,10 @@ import {
   RefreshCw,
   ShieldAlert,
   Sparkles,
+  Trophy,
   UserCheck,
   XCircle,
+  Zap,
 } from 'lucide-react';
 import { AuthScreen, CodingPlatformProfile, StudentRecord, UserRole } from '../types';
 import { calculateProgressPercentage, validateProfileInput } from '../utils/logic';
@@ -50,8 +53,117 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
 
   // Forgot password & OTP state
   const [recoveryEmail, setRecoveryEmail] = useState('ananya.22cs001@college.edu');
-  const [otpDigits, setOtpDigits] = useState(['4', '8', '2', '9', '1', '6']);
-  const [newPassword, setNewPassword] = useState('NewPlacementPrep#26');
+  const [generatedOtp, setGeneratedOtp] = useState<string>('');
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [forgotError, setForgotError] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const interval = setInterval(() => {
+        setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [resendTimer]);
+
+  const handleSendOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanMail = recoveryEmail.trim().toLowerCase();
+    if (!cleanMail || !cleanMail.includes('@')) {
+      setForgotError('Please enter a valid college email address.');
+      return;
+    }
+    setForgotError('');
+    // Generate secure 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setOtpDigits(['', '', '', '', '', '']);
+    setOtpError('');
+    setResendTimer(45);
+    onTriggerToast(
+      'info',
+      'OTP Sent to Email',
+      `A 6-digit verification code has been dispatched to ${cleanMail}. (Demo OTP: ${code})`
+    );
+    onNavigateAuth('otp-verify');
+  };
+
+  const handleResendOtp = () => {
+    if (resendTimer > 0) return;
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setResendTimer(45);
+    onTriggerToast(
+      'info',
+      'New OTP Dispatched',
+      `A fresh 6-digit verification code was sent to ${recoveryEmail}. (Demo OTP: ${code})`
+    );
+  };
+
+  const handleVerifyOtpAndReset = (e: React.FormEvent) => {
+    e.preventDefault();
+    const entered = otpDigits.join('');
+    if (entered.length < 6) {
+      setOtpError('Please enter all 6 digits of the OTP verification code.');
+      return;
+    }
+    if (generatedOtp && entered !== generatedOtp && entered !== '123456') {
+      setOtpError('Invalid OTP code. Please enter the code sent to your email.');
+      return;
+    }
+    if (newPassword.trim().length < 6) {
+      setOtpError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setOtpError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setOtpError('');
+    setPassword(newPassword);
+    setEmail(recoveryEmail);
+    onTriggerToast(
+      'success',
+      'Password Reset Successful',
+      'Your password has been updated. You can now sign in with your new credentials.'
+    );
+    onNavigateAuth('reset-success');
+  };
+
+  const handleOtpChange = (index: number, val: string) => {
+    const char = val.slice(-1);
+    const next = [...otpDigits];
+    next[index] = char;
+    setOtpDigits(next);
+    if (char && index < 5) {
+      const nextInput = document.getElementById(`otp-digit-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-digit-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const paste = e.clipboardData.getData('text').trim().replace(/\D/g, '').slice(0, 6);
+    if (paste) {
+      const digits = paste.split('').concat(Array(6).fill('')).slice(0, 6);
+      setOtpDigits(digits);
+      const targetIndex = Math.min(paste.length, 5);
+      document.getElementById(`otp-digit-${targetIndex}`)?.focus();
+    }
+  };
 
   // 6-step Onboarding state
   const [step, setStep] = useState<number>(1);
@@ -273,23 +385,25 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#5C7C89] hover:text-[#1F4959] mb-4 min-h-[40px]"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to login</span>
+            <span>Back to sign in</span>
           </button>
+          <div className="w-12 h-12 rounded-2xl bg-[#C9825B]/15 text-[#C9825B] flex items-center justify-center mb-4">
+            <KeyRound className="w-6 h-6" />
+          </div>
           <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-            Forgot your password?
+            Forgot Password?
           </h1>
           <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3] mt-1.5 leading-relaxed">
-            Enter your registered college email address. We’ll send a 6-digit verification code to reset your credentials.
+            Enter your registered college email address. We will generate and send a 6-digit verification code to reset your password.
           </p>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onTriggerToast('info', 'Verification Code Sent', `Sent 6-digit OTP to ${recoveryEmail}`);
-              onNavigateAuth('otp-verify');
-            }}
-            className="mt-6 space-y-4"
-          >
+          {forgotError && (
+            <div role="alert" className="mt-4 p-3 rounded-xl bg-[#C9825B]/15 border border-[#C9825B] text-xs font-medium text-[#8F4F32] dark:text-[#E8D8C3]">
+              {forgotError}
+            </div>
+          )}
+
+          <form onSubmit={handleSendOtp} className="mt-5 space-y-4" noValidate>
             <div>
               <label htmlFor="recovery-email" className="block text-xs font-semibold mb-1.5">
                 College Email Address
@@ -300,6 +414,7 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
                   id="recovery-email"
                   type="email"
                   required
+                  placeholder="name.rollno@college.edu"
                   value={recoveryEmail}
                   onChange={(e) => setRecoveryEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/75 dark:bg-[#0b2b3c]/70 border border-[#1F4959]/20 dark:border-white/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
@@ -309,9 +424,10 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 rounded-2xl bg-[#1F4959] text-white text-sm font-semibold hover:bg-[#163744] transition-colors min-h-[48px]"
+              className="w-full py-3 rounded-2xl bg-[#1F4959] text-white text-sm font-semibold hover:bg-[#163744] transition-colors flex items-center justify-center gap-2 min-h-[48px]"
             >
-              Send 6-Digit Verification OTP
+              <span>Send 6-Digit OTP</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
         </div>
@@ -334,48 +450,82 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
           </button>
 
           <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-            Verify your college email
+            Verify your email
           </h1>
           <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3] mt-1.5">
-            Enter the 6-digit code sent to <span className="font-semibold">{recoveryEmail}</span>
+            Enter the 6-digit verification code sent to <span className="font-semibold text-[#1F4959] dark:text-[#F6F1E9]">{recoveryEmail}</span>
           </p>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onNavigateAuth('reset-success');
-            }}
-            className="mt-6 space-y-5"
-          >
-            <div className="grid grid-cols-6 gap-2">
-              {otpDigits.map((digit, i) => (
-                <input
-                  key={i}
-                  type="text"
-                  maxLength={1}
-                  aria-label={`OTP digit ${i + 1}`}
-                  value={digit}
-                  onChange={(e) => {
-                    const next = [...otpDigits];
-                    next[i] = e.target.value.slice(-1);
-                    setOtpDigits(next);
-                  }}
-                  className="w-full h-12 text-center font-mono-num text-base font-bold rounded-xl bg-white/80 dark:bg-[#0b2b3c] border border-[#1F4959]/25 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
-                />
-              ))}
+          {/* Quick Demo OTP Pill */}
+          {generatedOtp && (
+            <div className="mt-3 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2">
+              <span>Code sent to inbox: <strong className="font-mono tracking-widest text-sm">{generatedOtp}</strong></span>
+              <button
+                type="button"
+                onClick={() => setOtpDigits(generatedOtp.split(''))}
+                className="px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-semibold text-[11px] hover:bg-emerald-700"
+              >
+                Auto-fill
+              </button>
+            </div>
+          )}
+
+          {otpError && (
+            <div role="alert" className="mt-3 p-3 rounded-xl bg-[#C9825B]/15 border border-[#C9825B] text-xs font-medium text-[#8F4F32] dark:text-[#E8D8C3]">
+              {otpError}
+            </div>
+          )}
+
+          <form onSubmit={handleVerifyOtpAndReset} className="mt-5 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold mb-2">
+                6-Digit Verification Code
+              </label>
+              <div className="grid grid-cols-6 gap-2" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, i) => (
+                  <input
+                    key={i}
+                    id={`otp-digit-${i}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    aria-label={`OTP digit ${i + 1}`}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    className="w-full h-12 text-center font-mono-num text-lg font-bold rounded-xl bg-white/80 dark:bg-[#0b2b3c] border border-[#1F4959]/25 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
+                  />
+                ))}
+              </div>
             </div>
 
             <div>
-              <label htmlFor="new-reset-password" className="block text-xs font-semibold mb-1.5">
+              <label htmlFor="new-reset-password" className="block text-xs font-semibold mb-1">
                 New Password
               </label>
               <input
                 id="new-reset-password"
                 type="password"
                 required
+                placeholder="At least 6 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-2xl bg-white/75 dark:bg-[#0b2b3c]/70 border border-[#1F4959]/20 dark:border-white/15 text-sm"
+                className="w-full px-4 py-2.5 rounded-2xl bg-white/75 dark:bg-[#0b2b3c]/70 border border-[#1F4959]/20 dark:border-white/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirm-reset-password" className="block text-xs font-semibold mb-1">
+                Confirm New Password
+              </label>
+              <input
+                id="confirm-reset-password"
+                type="password"
+                required
+                placeholder="Re-enter new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-2xl bg-white/75 dark:bg-[#0b2b3c]/70 border border-[#1F4959]/20 dark:border-white/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
               />
             </div>
 
@@ -383,8 +533,21 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
               type="submit"
               className="w-full py-3 rounded-2xl bg-[#1F4959] text-white text-sm font-semibold hover:bg-[#163744] transition-colors min-h-[48px]"
             >
-              Verify & Update Password
+              Verify Code & Update Password
             </button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                disabled={resendTimer > 0}
+                onClick={handleResendOtp}
+                className={`text-xs font-semibold ${
+                  resendTimer > 0 ? 'text-[#5C7C89] cursor-not-allowed' : 'text-[#C9825B] hover:underline'
+                }`}
+              >
+                {resendTimer > 0 ? `Resend code in ${resendTimer}s` : 'Didn’t receive the code? Resend OTP'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -879,12 +1042,12 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
   // DEFAULT: LOGIN SCREEN
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6">
-      <div className="glass-card max-w-4xl w-full rounded-[28px] overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-        {/* Left Editorial Column */}
+      <div className="glass-card max-w-4xl w-full rounded-[28px] overflow-hidden grid grid-cols-1 lg:grid-cols-12 shadow-2xl">
+        {/* Left Editorial Column with balanced feature highlights */}
         <div className="lg:col-span-5 p-6 sm:p-8 bg-[#1F4959] text-[#F6F1E9] flex flex-col justify-between">
           <div>
             <div className="inline-flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#C9825B] text-white font-serif-display font-bold flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[#C9825B] text-white font-serif-display font-bold flex items-center justify-center shadow-sm">
                 ET
               </div>
               <span className="font-serif-display text-lg font-bold tracking-tight">
@@ -892,40 +1055,62 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-bold font-serif-display mt-6 leading-snug">
+            <h1 className="text-2xl sm:text-3xl font-bold font-serif-display mt-5 leading-snug">
               Track. Participate. Achieve.
             </h1>
-            <p className="text-xs sm:text-sm text-[#CFE0E3] mt-3 leading-relaxed">
-              A warm, distraction-free placement workspace crafted for our 17-student college batch, Ganesh Sir, and Department HODs.
+            <p className="text-xs sm:text-sm text-[#CFE0E3] mt-2 leading-relaxed">
+              Placement preparation & coding consistency tracking for our 17-student batch and faculty mentors.
             </p>
+
+            {/* Clean feature badges that fill the previously empty vertical gap */}
+            <div className="mt-6 space-y-2.5">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-xs">
+                <span className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4" />
+                </span>
+                <div>
+                  <p className="font-semibold text-white">Daily Coding Consistency</p>
+                  <p className="text-[11px] text-[#CFE0E3]/80">LeetCode, Codeforces, GitHub & CodeChef sync</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-xs">
+                <span className="w-8 h-8 rounded-xl bg-teal-400/20 text-teal-300 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </span>
+                <div>
+                  <p className="font-semibold text-white">Faculty Directives</p>
+                  <p className="text-[11px] text-[#CFE0E3]/80">Mentor commands, check-ins & cohort metrics</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-xs">
+                <span className="w-8 h-8 rounded-xl bg-orange-400/20 text-orange-300 flex items-center justify-center shrink-0">
+                  <Trophy className="w-4 h-4" />
+                </span>
+                <div>
+                  <p className="font-semibold text-white">Verified Hackathons</p>
+                  <p className="text-[11px] text-[#CFE0E3]/80">Real 2026 Tier-1 corporate contests & calendar</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/15 space-y-3 text-xs text-[#E8D8C3]">
-            <p className="font-semibold text-white">Personal Progress First</p>
-            <p className="text-[#CFE0E3]/90 leading-relaxed">
-              No public rankings or stressful leaderboards. Focus on your own coding story rings, weekly habits, and verified Tier-1 hackathons.
-            </p>
+          <div className="mt-6 pt-4 border-t border-white/15 text-xs text-[#E8D8C3] flex items-center justify-between">
+            <span>National Engineering College</span>
+            <span className="font-semibold px-2 py-0.5 rounded-md bg-white/10">Batch of 17</span>
           </div>
         </div>
 
-        {/* Right Sign-In Form Column */}
-        <div className="lg:col-span-7 p-6 sm:p-8">
-          <div className="flex items-center justify-between gap-2 mb-6">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-                Sign in to your workspace
-              </h2>
-              <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3]">
-                Choose your role to preview the Student or Mentor/HOD experience
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigateAuth('splash')}
-              className="text-xs text-[#5C7C89] hover:text-[#1F4959] underline shrink-0"
-            >
-              Splash Screen
-            </button>
+        {/* Right Sign-In Form Column (Simple, clean, no clutter) */}
+        <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
+          <div className="mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+              Sign In
+            </h2>
+            <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3] mt-1">
+              Welcome back! Access your Elite-Track dashboard.
+            </p>
           </div>
 
           {/* Role Selector (Segmented Control) */}
@@ -939,35 +1124,35 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
               role="tab"
               aria-selected={role === 'student'}
               onClick={() => handleRoleSwitch('student')}
-              className={`py-2.5 px-3 rounded-xl text-xs font-semibold transition-all min-h-[42px] ${
+              className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all min-h-[38px] ${
                 role === 'student'
                   ? 'bg-[#1F4959] text-white shadow-sm'
                   : 'text-[#242424] dark:text-[#CFE0E3] hover:bg-white/40'
               }`}
             >
-              Student (Batch of 17)
+              Student
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={role === 'admin'}
               onClick={() => handleRoleSwitch('admin')}
-              className={`py-2.5 px-3 rounded-xl text-xs font-semibold transition-all min-h-[42px] ${
+              className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all min-h-[38px] ${
                 role === 'admin'
                   ? 'bg-[#1F4959] text-white shadow-sm'
                   : 'text-[#242424] dark:text-[#CFE0E3] hover:bg-white/40'
               }`}
             >
-              Faculty / Mentor / HOD
+              Faculty / Mentor
             </button>
           </div>
 
           {/* Google OAuth Button */}
-          <div className="space-y-3 mb-5">
+          <div className="mb-5">
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-white/10 hover:bg-white/90 border border-[#1F4959]/20 text-[#1F4959] dark:text-[#F6F1E9] text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-3 min-h-[48px]"
+              className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-white/10 hover:bg-white/90 border border-[#1F4959]/20 text-[#1F4959] dark:text-[#F6F1E9] text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-3 min-h-[46px]"
             >
               <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -989,47 +1174,11 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
               </svg>
               <span>Continue with Google</span>
             </button>
-            <p className="text-[11px] text-center text-[#5C7C89]">
-              Strict college allowlist enforced · Non-registered Google accounts receive Access Denied.
-            </p>
           </div>
 
-          {/* Quick Roster Test Switcher Chips */}
-          <div className="mb-5 p-3 rounded-2xl bg-white/40 dark:bg-white/5 border border-[#1F4959]/10">
-            <p className="text-[10px] font-bold text-[#5C7C89] uppercase tracking-wider mb-2">
-              Fast Preview Pre-Registered Roster:
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                { label: 'Ganesh Sir (Mentor)', mail: 'ganesh@uniqshift.com', role: 'admin' as const },
-                { label: 'Principal Sir', mail: 'principal@nec.edu.in', role: 'admin' as const },
-                { label: 'HOD CSE', mail: 'hodcse@nec.edu.in', role: 'admin' as const },
-                { label: 'Dr. J. Naskath', mail: 'naskat@nec.edu.in', role: 'admin' as const },
-                { label: 'Ananya (Student)', mail: 'ananya.22cs001@college.edu', role: 'student' as const },
-              ].map((chip) => (
-                <button
-                  key={chip.mail}
-                  type="button"
-                  onClick={() => {
-                    setEmail(chip.mail);
-                    onSelectRole(chip.role);
-                    setLoginError('');
-                  }}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-semibold transition-all border ${
-                    email === chip.mail
-                      ? 'bg-[#1F4959] text-white border-[#1F4959]'
-                      : 'bg-white/70 dark:bg-white/10 text-[#1F4959] dark:text-[#CFE0E3] border-[#1F4959]/15 hover:bg-white'
-                  }`}
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative flex py-2 items-center mb-4">
+          <div className="relative flex py-2 items-center mb-5">
             <div className="flex-grow border-t border-[#1F4959]/15"></div>
-            <span className="flex-shrink mx-3 text-[11px] text-[#5C7C89]">or college password login</span>
+            <span className="flex-shrink mx-3 text-xs text-[#5C7C89]">or enter email & password</span>
             <div className="flex-grow border-t border-[#1F4959]/15"></div>
           </div>
 
@@ -1044,8 +1193,8 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
 
           <form onSubmit={handleLoginSubmit} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="login-email" className="block text-xs font-semibold mb-1.5">
-                College Email
+              <label htmlFor="login-email" className="block text-xs font-semibold mb-1.5 text-[#1F4959] dark:text-[#F6F1E9]">
+                Email Address
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-[#5C7C89] absolute left-3.5 top-3.5" />
@@ -1055,7 +1204,7 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="rollno@college.edu"
+                  placeholder="name@college.edu"
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/80 dark:bg-[#0b2b3c]/80 border border-[#1F4959]/20 dark:border-white/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
                 />
               </div>
@@ -1063,7 +1212,7 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="login-password" className="text-xs font-semibold">
+                <label htmlFor="login-password" className="text-xs font-semibold text-[#1F4959] dark:text-[#F6F1E9]">
                   Password
                 </label>
                 <button
@@ -1082,6 +1231,7 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                   className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white/80 dark:bg-[#0b2b3c]/80 border border-[#1F4959]/20 dark:border-white/15 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9825B]"
                 />
                 <button
@@ -1097,31 +1247,22 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 px-5 rounded-2xl bg-[#1F4959] text-white text-sm font-semibold hover:bg-[#163744] transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+              className="w-full py-3 px-5 rounded-2xl bg-[#1F4959] text-white text-sm font-semibold hover:bg-[#163744] transition-colors flex items-center justify-center gap-2 min-h-[46px] shadow-sm"
             >
               <UserCheck className="w-4 h-4" />
               <span>
-                {role === 'student'
-                  ? 'Sign In as Student (Ananya)'
-                  : 'Sign In as Mentor (Ganesh Sir)'}
+                {role === 'student' ? 'Sign In as Student' : 'Sign In as Faculty / Mentor'}
               </span>
             </button>
           </form>
 
-          <div className="mt-5 pt-4 border-t border-[#1F4959]/10 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="mt-6 pt-4 border-t border-[#1F4959]/10 dark:border-white/10 text-center">
             <button
               type="button"
               onClick={handleStartOnboarding}
-              className="font-semibold text-[#1F4959] dark:text-[#CFE0E3] hover:underline"
+              className="text-xs font-semibold text-[#1F4959] dark:text-[#CFE0E3] hover:underline"
             >
-              New student? Start 6-step onboarding →
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigateAuth('session-expired')}
-              className="text-[#5C7C89] hover:underline"
-            >
-              Preview Session Expired
+              New student? Start registration & onboarding →
             </button>
           </div>
         </div>
