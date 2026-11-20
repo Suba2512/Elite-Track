@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin';
+export type UserRole = 'student' | 'faculty' | 'super_admin' | 'admin';
 
 export type AuthScreen =
   | 'splash'
@@ -31,6 +31,7 @@ export type AdminTab =
   | 'command-tracking'
   | 'announcements'
   | 'analytics'
+  | 'leaderboards'
   | 'settings';
 
 export type SystemStateScreen =

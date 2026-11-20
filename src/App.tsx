@@ -23,6 +23,7 @@ import {
   Sparkles,
   Sun,
   Terminal,
+  Trophy,
   User,
   Users,
   WifiOff,
@@ -560,6 +561,7 @@ export default function App() {
               >
                 {[
                   { id: 'dashboard' as const, label: 'Overview' },
+                  { id: 'leaderboards' as const, label: 'Leaderboard' },
                   { id: 'issue-command' as const, label: 'Issue Command' },
                   { id: 'opportunities-pipeline' as const, label: 'Pipeline' },
                   { id: 'students' as const, label: '17 Students' },
@@ -667,7 +669,8 @@ export default function App() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5">
                     {[
-                      { id: 'dashboard' as const, label: 'Mentor Dashboard', icon: Home },
+                      { id: 'dashboard' as const, label: 'Faculty Dashboard', icon: Home },
+                      { id: 'leaderboards' as const, label: 'Batch Leaderboards', icon: Trophy },
                       { id: 'issue-command' as const, label: 'Issue Command', icon: Terminal },
                       {
                         id: 'opportunities-pipeline' as const,
@@ -697,7 +700,7 @@ export default function App() {
                       },
                       {
                         id: 'settings' as const,
-                        label: 'Roles & Settings',
+                        label: 'Faculty Cohort (12)',
                         icon: Settings,
                       },
                     ].map((item) => {
@@ -871,6 +874,7 @@ export default function App() {
               })
               : [
                 { id: 'dashboard' as const, label: 'Overview', icon: Home },
+                { id: 'leaderboards' as const, label: 'Ranking', icon: Trophy },
                 { id: 'issue-command' as const, label: 'Command', icon: Terminal },
                 { id: 'opportunities-pipeline' as const, label: 'Verify', icon: ShieldCheck },
                 { id: 'students' as const, label: 'Batch 17', icon: Users },

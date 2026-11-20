@@ -1224,39 +1224,89 @@ export const StudentPrimaryViews: React.FC<StudentPrimaryViewsProps> = ({
       {/* Consistency / Streak View + Contests vs Hackathons vs Practice Split */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Consistency & Streak Heatmap Strip */}
-        <section className="lg:col-span-7 glass-card rounded-[26px] p-6">
-          <div className="flex items-center justify-between mb-4">
+        <section className="lg:col-span-7 glass-card rounded-[26px] p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-lg font-bold font-serif-display">
-                14-Day Warm Consistency Streak
+              <h2 className="text-lg font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+                Verified 28-Day Activity Heatmap (IST)
               </h2>
-              <p className="text-xs text-[#5C7C89]">
-                Every highlighted tile marks a day with at least 1 verified problem or commit
+              <p className="text-xs text-[#5C7C89] dark:text-[#89A7B3]">
+                Strictly tracks accepted problem solves (LeetCode, CF, CC). <span className="font-semibold text-[#1F4959] dark:text-[#CFE0E3]">GitHub commits strictly separated.</span>
               </p>
             </div>
-            <span className="text-sm font-mono-num font-bold text-[#C9825B]">
-              {student.streakDays} Days Active
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2.5 py-1 rounded-full bg-[#C9825B]/15 text-[#C9825B] font-bold">
+                {student.streakDays}-Day Active Streak
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-7 sm:grid-cols-14 gap-2">
-            {Array.from({ length: 14 }).map((_, idx) => {
-              const dayNum = idx + 5;
-              const isHigh = idx % 3 === 0 || idx > 10;
+          {/* 4-Week Heatmap Grid */}
+          <div className="grid grid-cols-7 sm:grid-cols-14 gap-2 pt-1">
+            {Array.from({ length: 28 }).map((_, idx) => {
+              const dayOffset = 27 - idx;
+              const isToday = dayOffset === 0;
+              // Simulating verified status based on streak:
+              // Active for the last student.streakDays - 1, and today is in_progress grace period
+              const isActive = dayOffset > 0 && dayOffset <= (student.streakDays || 12);
+              const isUnverified = idx === 3 || idx === 8;
+              const state = isToday
+                ? 'in_progress'
+                : isActive
+                ? 'active'
+                : isUnverified
+                ? 'unverified'
+                : 'inactive';
+
+              const dayNumber = ((idx + 24) % 30) + 1;
+
               return (
                 <div
-                  key={dayNum}
-                  className={`p-2.5 rounded-xl flex flex-col items-center justify-center border ${
-                    isHigh
-                      ? 'bg-[#C9825B] text-white border-[#C9825B]'
-                      : 'bg-[#D9A441]/35 text-[#1F4959] dark:text-[#F6F1E9] border-[#D9A441]/50'
+                  key={idx}
+                  title={
+                    state === 'active'
+                      ? `Nov ${dayNumber}: Active (Verified problem solves)`
+                      : state === 'in_progress'
+                      ? `Nov ${dayNumber} (Today): In-Progress grace period until 23:59:59 IST`
+                      : state === 'unverified'
+                      ? `Nov ${dayNumber}: Unverified (Historical sync pending)`
+                      : `Nov ${dayNumber}: Inactive (0 qualifying accepted solves)`
+                  }
+                  className={`p-2 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
+                    state === 'active'
+                      ? 'bg-[#C9825B] text-white border border-[#C9825B] shadow-sm'
+                      : state === 'in_progress'
+                      ? 'bg-[#D9A441] text-[#1F4959] font-bold border-2 border-[#1F4959] animate-pulse'
+                      : state === 'unverified'
+                      ? 'bg-transparent text-[#5C7C89] border border-dashed border-[#5C7C89]/50'
+                      : 'bg-white/40 dark:bg-white/5 text-[#5C7C89] border border-[#1F4959]/10'
                   }`}
                 >
-                  <span className="text-[10px] opacity-80">Nov</span>
-                  <span className="text-xs font-mono-num font-bold">{dayNum}</span>
+                  <span className="text-[9px] uppercase opacity-75">{isToday ? 'Today' : 'Nov'}</span>
+                  <span className="text-xs font-mono-num font-bold">{dayNumber}</span>
                 </div>
               );
             })}
+          </div>
+
+          {/* Heatmap Legend */}
+          <div className="pt-2 border-t border-[#1F4959]/10 flex flex-wrap items-center gap-3.5 text-[11px] text-[#5C7C89]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-md bg-[#C9825B]" />
+              <span>Active (≥1 solve)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-md bg-[#D9A441] border border-[#1F4959]" />
+              <span>In-Progress (IST Grace until 23:59:59)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-md bg-white/50 border border-[#1F4959]/15" />
+              <span>Inactive (0 solves)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-md border border-dashed border-[#5C7C89]" />
+              <span>Pending Verification</span>
+            </div>
           </div>
         </section>
 

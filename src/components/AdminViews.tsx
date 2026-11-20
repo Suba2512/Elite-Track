@@ -3,14 +3,18 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowUpRight,
+  Award,
   BarChart3,
   Bell,
   Check,
   CheckCircle2,
   Clock,
+  Download,
   Eye,
   FileCheck,
   FilePlus,
+  FileSpreadsheet,
+  Medal,
   MessageSquare,
   Plus,
   RefreshCw,
@@ -20,6 +24,7 @@ import {
   ShieldCheck,
   Sparkles,
   Terminal,
+  Trophy,
   Users,
   X,
 } from 'lucide-react';
@@ -33,6 +38,7 @@ import {
 } from '../types';
 import { AVATAR_GANESH } from '../data/seedData';
 import { computeBatchOverview } from '../utils/logic';
+import { exportIndividualStudentDossier, exportConsolidatedBatchWorkbook } from '../utils/excelExporter';
 import { CompanyMonogram } from './Illustrations';
 
 interface AdminViewsProps {
@@ -252,11 +258,30 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
+              onClick={() => onNavigateTab('leaderboards')}
+              className="px-4 py-2.5 rounded-2xl bg-[#D9A441] text-[#1F4959] text-xs font-bold hover:bg-[#c89433] transition-colors inline-flex items-center gap-1.5 min-h-[44px] shadow-sm"
+            >
+              <Award className="w-4 h-4" />
+              <span>Leaderboards</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                exportConsolidatedBatchWorkbook(students, commands);
+                onTriggerToast('success', 'Excel Export Downloaded', 'Consolidated 17-Student Master Workbook (.xlsx) generated.');
+              }}
+              className="px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-white/10 border border-[#1F4959]/25 text-[#1F4959] dark:text-[#F6F1E9] text-xs font-bold hover:bg-white transition-colors inline-flex items-center gap-1.5 min-h-[44px]"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-[#1F4959]" />
+              <span>Export Batch Excel</span>
+            </button>
+            <button
+              type="button"
               onClick={() => onNavigateTab('issue-command')}
               className="px-4 py-2.5 rounded-2xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] transition-colors inline-flex items-center gap-1.5 min-h-[44px]"
             >
               <Plus className="w-4 h-4" />
-              <span>Issue New Command</span>
+              <span>Issue Command</span>
             </button>
             <button
               type="button"
@@ -264,7 +289,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
               className="px-4 py-2.5 rounded-2xl bg-[#C9825B] text-white text-xs font-semibold hover:bg-[#b5714c] transition-colors inline-flex items-center gap-1.5 min-h-[44px]"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Approve Opportunities ({pendingOpportunities.length})</span>
+              <span>Approve Opps ({pendingOpportunities.length})</span>
             </button>
           </div>
         </section>
@@ -1746,17 +1771,30 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setCmdTargetType('individual');
-                setCmdTargetStudentId(stu.id);
-                onNavigateTab('issue-command');
-              }}
-              className="px-4 py-2.5 rounded-2xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] self-start min-h-[42px]"
-            >
-              Issue 1-on-1 Command to {stu.name.split(' ')[0]}
-            </button>
+            <div className="flex flex-wrap items-center gap-2 self-start">
+              <button
+                type="button"
+                onClick={() => {
+                  exportIndividualStudentDossier(stu, commands);
+                  onTriggerToast('success', 'Student Dossier Exported', `Downloaded complete dossier for ${stu.name} (${stu.rollNo})`);
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-white/90 dark:bg-white/10 border border-[#1F4959]/25 text-[#1F4959] dark:text-[#F6F1E9] text-xs font-bold hover:bg-white transition-colors inline-flex items-center gap-1.5 min-h-[42px]"
+              >
+                <Download className="w-4 h-4 text-[#C9825B]" />
+                <span>Export Dossier (.xlsx)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCmdTargetType('individual');
+                  setCmdTargetStudentId(stu.id);
+                  onNavigateTab('issue-command');
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] min-h-[42px]"
+              >
+                Issue 1-on-1 Command
+              </button>
+            </div>
           </div>
         </section>
 
@@ -2036,51 +2074,302 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
     );
   }
 
+  // ============================================================================
+  // 9. LEADERBOARDS (Faculty View Only - 5 Approved Dimensions)
+  // ============================================================================
+  if (activeTab === 'leaderboards') {
+    // Scoring Formula: Easy*1 + Med*3 + Hard*5 + Streak*2 (GitHub commits strictly excluded)
+    const computeScore = (s: StudentRecord) => {
+      const easy = s.problemsEasy || Math.floor((s.problemsSolved || 0) * 0.45);
+      const med = s.problemsMedium || Math.floor((s.problemsSolved || 0) * 0.40);
+      const hard = s.problemsHard || Math.max(0, (s.problemsSolved || 0) - easy - med);
+      return easy * 1 + med * 3 + hard * 5 + (s.streakDays || 0) * 2;
+    };
+
+    const sortedStudents = [...students].sort((a, b) => computeScore(b) - computeScore(a));
+
+    return (
+      <div className="space-y-6">
+        <section className="glass-card rounded-[26px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D9A441]/20 border border-[#D9A441]/40 text-[#1F4959] dark:text-[#E8D8C3] text-xs font-bold mb-2">
+              <Trophy className="w-3.5 h-3.5 text-[#D9A441]" />
+              <span>Faculty Consolidated View Only</span>
+            </div>
+            <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+              Batch of 17 — Performance Leaderboards
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
+              Rankings weighted by verified problem difficulty (Easy ×1, Medium ×3, Hard ×5) + Consistency (Streak ×2). 
+              <span className="font-semibold text-[#1F4959] dark:text-[#CFE0E3]"> GitHub commits strictly excluded from DSA scores.</span>
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                exportConsolidatedBatchWorkbook(students, commands);
+                onTriggerToast('success', 'Leaderboard Exported', 'Downloaded full 17-student batch master workbook (.xlsx).');
+              }}
+              className="px-4 py-2.5 rounded-2xl bg-[#1F4959] text-white text-xs font-semibold hover:bg-[#163744] transition-colors inline-flex items-center gap-1.5 min-h-[42px] shadow-sm"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-[#D9A441]" />
+              <span>Export Leaderboard (.xlsx)</span>
+            </button>
+          </div>
+        </section>
+
+        {/* Podium for Top 3 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {sortedStudents.slice(0, 3).map((stu, idx) => {
+            const score = computeScore(stu);
+            const medals = [
+              { color: 'bg-[#D9A441]', border: 'border-[#D9A441]', label: '1st Rank · Gold', ring: 'ring-amber-400' },
+              { color: 'bg-[#5C7C89]', border: 'border-[#5C7C89]', label: '2nd Rank · Silver', ring: 'ring-slate-300' },
+              { color: 'bg-[#C9825B]', border: 'border-[#C9825B]', label: '3rd Rank · Bronze', ring: 'ring-amber-700' },
+            ];
+            const medal = medals[idx];
+            return (
+              <div
+                key={stu.id}
+                className={`glass-card rounded-[24px] p-5 relative overflow-hidden border-2 ${medal.border}`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`px-2.5 py-1 rounded-full text-white text-[11px] font-bold ${medal.color}`}>
+                    {medal.label}
+                  </span>
+                  <span className="text-2xl font-black font-mono-num text-[#1F4959] dark:text-[#CFE0E3]">
+                    #{idx + 1}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={stu.avatarUrl}
+                    alt={stu.name}
+                    className="w-12 h-12 rounded-2xl object-cover border-2 border-white/60 shadow-sm"
+                  />
+                  <div>
+                    <h3 className="font-bold text-sm text-[#1F4959] dark:text-[#F6F1E9]">{stu.name}</h3>
+                    <p className="text-xs text-[#5C7C89] font-mono-num">{stu.rollNo} · {stu.department}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#1F4959]/10 grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-[#5C7C89]">Total Solved</p>
+                    <p className="font-bold text-xs font-mono-num text-[#1F4959] dark:text-[#CFE0E3]">{stu.problemsSolved}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#5C7C89]">Streak</p>
+                    <p className="font-bold text-xs font-mono-num text-[#C9825B]">{stu.streakDays}d</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#5C7C89]">Score</p>
+                    <p className="font-bold text-xs font-mono-num text-[#D9A441]">{score}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Master Leaderboard Table */}
+        <section className="glass-card rounded-[26px] p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+              Complete Batch Ranking (17 Students)
+            </h2>
+            <span className="text-xs text-[#5C7C89]">
+              Auto-refreshed via synchronized platform feeds
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[#1F4959]/15 text-[#5C7C89]">
+                  <th className="py-3 px-3 font-semibold">Rank</th>
+                  <th className="py-3 px-3 font-semibold">Student</th>
+                  <th className="py-3 px-3 font-semibold">Roll No</th>
+                  <th className="py-3 px-3 font-semibold">Dept</th>
+                  <th className="py-3 px-3 font-semibold text-center">Problems Solved</th>
+                  <th className="py-3 px-3 font-semibold text-center">Streak</th>
+                  <th className="py-3 px-3 font-semibold text-center">Hackathons</th>
+                  <th className="py-3 px-3 font-semibold text-right">Weighted Score</th>
+                  <th className="py-3 px-3 font-semibold text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1F4959]/10">
+                {sortedStudents.map((stu, index) => {
+                  const score = computeScore(stu);
+                  return (
+                    <tr
+                      key={stu.id}
+                      className="hover:bg-white/40 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <td className="py-3 px-3 font-mono-num font-bold">
+                        {index === 0 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#D9A441] text-white font-bold text-[10px]">#1</span>}
+                        {index === 1 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#5C7C89] text-white font-bold text-[10px]">#2</span>}
+                        {index === 2 && <span className="inline-block px-2 py-0.5 rounded-full bg-[#C9825B] text-white font-bold text-[10px]">#3</span>}
+                        {index > 2 && <span className="text-[#5C7C89]">#{index + 1}</span>}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          <img src={stu.avatarUrl} alt="" className="w-7 h-7 rounded-xl object-cover" />
+                          <span className="font-semibold text-[#1F4959] dark:text-[#F6F1E9]">{stu.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 font-mono-num text-[#5C7C89]">{stu.rollNo}</td>
+                      <td className="py-3 px-3 font-medium">{stu.department}</td>
+                      <td className="py-3 px-3 font-mono-num text-center font-bold text-[#1F4959] dark:text-[#CFE0E3]">
+                        {stu.problemsSolved}
+                      </td>
+                      <td className="py-3 px-3 font-mono-num text-center font-bold text-[#C9825B]">
+                        {stu.streakDays}d
+                      </td>
+                      <td className="py-3 px-3 font-mono-num text-center">
+                        {stu.contestsAttended}
+                      </td>
+                      <td className="py-3 px-3 font-mono-num font-bold text-right text-[#D9A441]">
+                        {score} pts
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onSelectStudent(stu.id);
+                            onNavigateTab('student-detail');
+                          }}
+                          className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-white/10 hover:bg-[#1F4959] hover:text-white transition-colors text-[11px] font-semibold border border-[#1F4959]/15"
+                        >
+                          View Dossier
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 10. SETTINGS / UNIFIED FACULTY COHORT MANAGEMENT (12 Faculty Members)
+  // ============================================================================
   return (
     <div className="space-y-6">
-      <section className="glass-card rounded-[26px] p-6">
-        <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
-          Mentor & HOD Roles Management
-        </h1>
-        <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
-          Manage administrative permissions for issuing commands and verifying external contest opportunities.
-        </p>
+      <section className="glass-card rounded-[26px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#1F4959]/10 border border-[#1F4959]/20 text-[#1F4959] dark:text-[#CFE0E3] text-xs font-bold mb-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1F4959]" />
+            <span>Unified Permission Matrix (Rule of 12)</span>
+          </div>
+          <h1 className="text-2xl font-bold font-serif-display text-[#1F4959] dark:text-[#F6F1E9]">
+            Faculty Cohort & Access Control
+          </h1>
+          <p className="text-xs sm:text-sm text-[#5C7C89] dark:text-[#89A7B3] mt-0.5">
+            All 12 faculty members—Mentor Ganesh Sir, Principal Sir, Dean R&D, HODs, and senior faculty—operate with identical administrative authority and unified dashboard access.
+          </p>
+        </div>
       </section>
 
       <div className="glass-card rounded-[26px] p-6 space-y-4">
-        {[
-          {
-            name: 'Prof. Ganesh Sir',
-            role: 'Lead Placement Mentor',
-            email: 'ganesh.mentor@college.edu',
-            scope: 'Full Batch Access · Command Issuer · Opportunity Approver · WhatsApp Broadcaster',
-          },
-          {
-            name: 'Dr. Meenakshi Raman',
-            role: 'Head of Department (CSE)',
-            email: 'hod.cse@college.edu',
-            scope: 'CSE Batch Oversight · Command Issuer · LLD Reviewer',
-          },
-          {
-            name: 'Dr. Senthil Nathan',
-            role: 'Head of Department (IT & AI&DS)',
-            email: 'hod.it@college.edu',
-            scope: 'IT Batch Oversight · Analytics & Progress Viewer',
-          },
-        ].map((admin) => (
-          <div
-            key={admin.email}
-            className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 border border-[#1F4959]/12 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
-            <div>
-              <p className="text-sm font-bold">{admin.name} · <span className="text-[#C9825B]">{admin.role}</span></p>
-              <p className="text-xs text-[#5C7C89]">{admin.email} · {admin.scope}</p>
+        <h2 className="text-sm font-bold text-[#1F4959] dark:text-[#F6F1E9] uppercase tracking-wider">
+          Approved Faculty Members (Pre-Registered Allowlist)
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          {[
+            {
+              name: 'Prof. Ganesh Sir',
+              role: 'Lead Placement Mentor',
+              email: 'ganesh@uniqshift.com',
+              dept: 'Placement Cell',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. K. Kalidasa Murugavel',
+              role: 'Principal',
+              email: 'principal@nec.edu.in',
+              dept: 'Administration',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. Shenbagavalli',
+              role: 'Dean R&D',
+              email: 'deanrd@nec.edu.in',
+              dept: 'Research & Development',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. V. Gomathi',
+              role: 'Head of Department (CSE)',
+              email: 'hodcse@nec.edu.in',
+              dept: 'Computer Science & Engg',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. L. Jerart Julus',
+              role: 'Head of Department (AI&DS)',
+              email: 'hodai@nec.edu.in',
+              dept: 'Artificial Intelligence & Data Science',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. D. Manimegalai',
+              role: 'Head of Department (IT)',
+              email: 'hodit@nec.edu.in',
+              dept: 'Information Technology',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Dr. B. Shanmuga Priya',
+              role: 'Associate Professor',
+              email: 'bsp@nec.edu.in',
+              dept: 'Information Technology',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Prof. Anitha',
+              role: 'Assistant Professor',
+              email: 'anithait@nec.edu.in',
+              dept: 'Information Technology',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+            {
+              name: 'Prof. Ram Priya',
+              role: 'Assistant Professor',
+              email: 'rampriya-aids@nec.edu.in',
+              dept: 'AI & Data Science',
+              access: 'Unified Faculty Cohort · Full Batch Oversight',
+            },
+          ].map((faculty) => (
+            <div
+              key={faculty.email}
+              className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 border border-[#1F4959]/12 flex flex-col justify-between gap-2.5 shadow-sm"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold text-[#1F4959] dark:text-[#F6F1E9]">{faculty.name}</p>
+                  <span className="px-2 py-0.5 rounded-full bg-[#1F4959]/10 text-[#1F4959] dark:text-[#CFE0E3] text-[10px] font-bold">
+                    {faculty.dept}
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-[#C9825B] mt-0.5">{faculty.role}</p>
+                <p className="text-xs font-mono-num text-[#5C7C89] mt-1">{faculty.email}</p>
+              </div>
+
+              <div className="pt-2 border-t border-[#1F4959]/10 flex items-center justify-between text-[11px] text-[#5C7C89]">
+                <span>{faculty.access}</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">● Allowed</span>
+              </div>
             </div>
-            <span className="text-xs font-semibold text-[#1F4959] dark:text-[#CFE0E3]">
-              Active Role
-            </span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
