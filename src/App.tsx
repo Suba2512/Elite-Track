@@ -66,6 +66,7 @@ import { AdminViews } from './components/AdminViews';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { CompanyMonogram } from './components/Illustrations';
 import { api, DiscoveryObservabilityStats } from './utils/apiClient';
+import { supabase, isSupabaseConfigured, verifyUserEmail } from './utils/supabaseClient';
 
 export default function App() {
   // Check localStorage for active session, otherwise default to login
@@ -96,11 +97,54 @@ export default function App() {
   const [adminTab, setAdminTab] = useState<AdminTab>('dashboard');
   const [darkMode, setDarkMode] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('elite_track_auth');
     localStorage.removeItem('elite_track_role');
     localStorage.removeItem('elite_track_email');
+    localStorage.removeItem('elite_track_name');
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setAuthScreen('login');
+  };
+
+  // Listen for real Supabase Google OAuth login/session events
+  useEffect(() => {
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          handleAuthUser(session.user);
+        }
+      });
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          await handleAuthUser(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          handleLogout();
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, []);
+
+  const handleAuthUser = async (user: any) => {
+    const userEmail = user.email || '';
+    const verification = await verifyUserEmail(userEmail);
+    const assignedRole = verification.role === 'faculty' ? 'admin' : 'student';
+
+    setRole(assignedRole);
+    setAuthScreen('authenticated');
+    localStorage.setItem('elite_track_auth', 'authenticated');
+    localStorage.setItem('elite_track_role', assignedRole);
+    localStorage.setItem('elite_track_email', userEmail);
+    localStorage.setItem(
+      'elite_track_name',
+      user.user_metadata?.full_name || verification.name || userEmail.split('@')[0]
+    );
   };
 
   // Core Shared Domain State (End-to-End Wired between Student and Mentor/Admin)
