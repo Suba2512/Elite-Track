@@ -4,6 +4,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { UserRole } from '../types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -71,7 +72,7 @@ export async function signInWithGoogle() {
  */
 export async function verifyUserEmail(
   email: string,
-  preferredRole: 'student' | 'admin' = 'student'
+  preferredRole: UserRole | 'student' | 'admin' = 'student'
 ): Promise<{ approved: boolean; role: 'student' | 'faculty'; name?: string; message?: string }> {
   const cleanEmail = email.trim().toLowerCase();
 
@@ -133,6 +134,7 @@ export async function verifyUserEmail(
 
   return {
     approved: false,
+    role: 'student',
     message: 'Please enter a valid email address.',
   };
 }

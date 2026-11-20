@@ -33,9 +33,10 @@ export function exportIndividualStudentDossier(
   XLSX.utils.book_append_sheet(wb, wsMetadata, 'Profile Overview');
 
   // Tab 2: Coding Platforms Summary
+  const studentProfiles = student.codingProfiles || student.platforms || [];
   const platformsData = [
     ['Platform', 'Handle / Username', 'Total Solved', 'Easy', 'Medium', 'Hard', 'Rating', 'Verification Status', 'Last Synced (IST)'],
-    ...student.codingProfiles.map((p) => [
+    ...studentProfiles.map((p: any) => [
       p.platform,
       p.handle,
       p.solvedCount,
@@ -112,10 +113,11 @@ export function exportConsolidatedBatchWorkbook(
   ];
 
   const summaryRows = students.map((stu, idx) => {
-    const lc = stu.codingProfiles.find((p) => p.platform === 'LeetCode')?.solvedCount || 0;
-    const cf = stu.codingProfiles.find((p) => p.platform === 'Codeforces')?.solvedCount || 0;
-    const cc = stu.codingProfiles.find((p) => p.platform === 'CodeChef')?.solvedCount || 0;
-    const gh = stu.codingProfiles.find((p) => p.platform === 'GitHub')?.solvedCount || 0;
+    const profiles = (stu.codingProfiles || stu.platforms || []) as any[];
+    const lc = profiles.find((p) => p.platform === 'LeetCode')?.solvedCount || 0;
+    const cf = profiles.find((p) => p.platform === 'Codeforces')?.solvedCount || 0;
+    const cc = profiles.find((p) => p.platform === 'CodeChef')?.solvedCount || 0;
+    const gh = profiles.find((p) => p.platform === 'GitHub')?.solvedCount || 0;
 
     return [
       idx + 1,
@@ -160,7 +162,8 @@ export function exportConsolidatedBatchWorkbook(
   ];
   const auditRows: (string | number)[][] = [];
   students.forEach((s) => {
-    s.codingProfiles.forEach((p) => {
+    const profiles = (s.codingProfiles || s.platforms || []) as any[];
+    profiles.forEach((p) => {
       auditRows.push([
         s.name,
         s.rollNo,

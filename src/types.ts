@@ -62,6 +62,8 @@ export interface CodingPlatformProfile {
   mediumSolved?: number;
   hardSolved?: number;
   streakDays?: number;
+  rating?: number;
+  rank?: string | number;
 }
 
 export type CommandStatus = 'Not started' | 'In progress' | 'Done';
@@ -177,6 +179,10 @@ export interface StudentRecord {
   weeklyTargetSolved: number;
   weeklyCurrentSolved: number;
   totalSolved: number;
+  problemsSolved?: number;
+  problemsEasy?: number;
+  problemsMedium?: number;
+  problemsHard?: number;
   contestsCount: number;
   hackathonsCount: number;
   commandsCompleted: number;
@@ -184,6 +190,7 @@ export interface StudentRecord {
   activeStatus: 'Active this week' | 'Needs check-in' | 'On track';
   lastActive: string;
   platforms: CodingPlatformProfile[];
+  codingProfiles?: CodingPlatformProfile[];
   weeklyActivity: { day: string; problems: number; commits: number }[];
   cumulativeHistory: { month: string; total: number }[];
 }

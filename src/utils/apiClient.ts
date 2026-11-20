@@ -3,7 +3,7 @@
  * Connects frontend views to Obj3 backend endpoints with graceful fallback to seed data.
  */
 
-import { Opportunity, PipelineStage, ActivityNotification } from '../types';
+import { Opportunity, PipelineStage, ActivityNotification, UserRole } from '../types';
 
 const API_BASE = '/api';
 
@@ -61,12 +61,13 @@ export const api = {
    * Fetches opportunities from backend.
    * Mentor sees all stages; students only see Approved.
    */
-  async getOpportunities(role: 'admin' | 'student', studentId: string = 'stu-01'): Promise<Opportunity[]> {
+  async getOpportunities(role: UserRole | string, studentId: string = 'stu-01'): Promise<Opportunity[]> {
     try {
-      const endpoint = role === 'admin' ? `${API_BASE}/opportunities` : `${API_BASE}/student/opportunities`;
+      const isAdmin = role === 'admin' || role === 'faculty' || role === 'super_admin';
+      const endpoint = isAdmin ? `${API_BASE}/opportunities` : `${API_BASE}/student/opportunities`;
       const res = await fetch(endpoint, {
         headers: {
-          'x-role': role,
+          'x-role': isAdmin ? 'admin' : 'student',
           'x-student-id': studentId,
         },
       });
