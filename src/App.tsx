@@ -587,10 +587,18 @@ export default function App() {
                 </div>
                 <div className="text-left">
                   <p className="text-xs font-bold leading-tight text-[#1F4959] dark:text-[#F6F1E9]">
-                    {role === 'admin' ? 'Faculty Portal' : 'Ananya Sharma'}
+                    {typeof window !== 'undefined' && localStorage.getItem('elite_track_name')
+                      ? localStorage.getItem('elite_track_name')
+                      : role === 'admin'
+                      ? 'Faculty Portal'
+                      : 'Student'}
                   </p>
-                  <p className="text-[10px] text-[#C9825B] leading-tight">
-                    {role === 'admin' ? 'Full Batch Access' : '22CS001 · Elite Batch'}
+                  <p className="text-[10px] text-[#C9825B] leading-tight truncate max-w-[140px]">
+                    {typeof window !== 'undefined' && localStorage.getItem('elite_track_email')
+                      ? localStorage.getItem('elite_track_email')
+                      : role === 'admin'
+                      ? 'Full Batch Access'
+                      : 'Elite Batch Student'}
                   </p>
                 </div>
               </div>

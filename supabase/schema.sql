@@ -781,8 +781,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 REVOKE ALL ON FUNCTION public.bootstrap_initial_super_admin FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.bootstrap_initial_super_admin TO service_role;
 
--- 7. PRE-SEED 10 APPROVED FACULTY MEMBERS
+-- 7. PRE-SEED APPROVED ROSTER (Super Admin & Faculty)
 INSERT INTO public.approved_users (email, role, full_name, notes) VALUES
+  ('smslgr2512@gmail.com', 'super_admin', 'Suba', 'Lead Developer & Super Admin'),
   ('ganesh@uniqshift.com', 'faculty', 'Prof. Ganesh Sir', 'Lead Placement Mentor'),
   ('principal@nec.edu.in', 'faculty', 'Dr. K. Kalidasa Murugavel', 'Principal'),
   ('deanrd@nec.edu.in', 'faculty', 'Dr. Shenbagavalli', 'Dean R&D'),

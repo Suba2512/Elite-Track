@@ -97,25 +97,29 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
         setLoginError(err.message || 'Google OAuth failed.');
       }
     } else {
-      // Offline/Demo fallback with strict allowlist check
-      const verification = await verifyUserEmail(email);
+      // Local / Offline fallback: prompt for email if not filled
+      let targetEmail = email.trim();
+      if (!targetEmail || !targetEmail.includes('@')) {
+        const entered = window.prompt('Enter your Google email address to sign in:', 'smslgr2512@gmail.com');
+        if (!entered) return;
+        targetEmail = entered.trim();
+        setEmail(targetEmail);
+      }
+
+      const verification = await verifyUserEmail(targetEmail, role);
       if (!verification.approved) {
-        setLoginError(verification.message || 'Access Denied: Email not in approved roster.');
+        setLoginError(verification.message || 'Access Denied: Email not registered.');
         return;
       }
-      if (verification.role === 'faculty') {
-        onSelectRole('admin');
-        localStorage.setItem('elite_track_auth', 'authenticated');
-        localStorage.setItem('elite_track_role', 'admin');
-        localStorage.setItem('elite_track_email', email);
-        onTriggerToast('success', 'Authenticated with Google', `Welcome, ${verification.name || 'Faculty Member'}!`);
-      } else {
-        onSelectRole('student');
-        localStorage.setItem('elite_track_auth', 'authenticated');
-        localStorage.setItem('elite_track_role', 'student');
-        localStorage.setItem('elite_track_email', email);
-        onTriggerToast('success', 'Authenticated with Google', 'Welcome, Ananya Sharma!');
-      }
+
+      const assignedRole = verification.role === 'faculty' ? 'admin' : 'student';
+      onSelectRole(assignedRole);
+      localStorage.setItem('elite_track_auth', 'authenticated');
+      localStorage.setItem('elite_track_role', assignedRole);
+      localStorage.setItem('elite_track_email', targetEmail);
+      localStorage.setItem('elite_track_name', verification.name || targetEmail.split('@')[0]);
+
+      onTriggerToast('success', 'Authenticated with Google', `Welcome, ${verification.name || targetEmail}!`);
       onNavigateAuth('authenticated');
     }
   };
@@ -123,18 +127,18 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes('@')) {
-      setLoginError('Please enter your valid college email address (e.g., name@college.edu).');
+      setLoginError('Please enter your valid college email address.');
       return;
     }
-    if (password.trim().length < 6) {
-      setLoginError('Password must be at least 6 characters long.');
+    if (password.trim().length < 4) {
+      setLoginError('Password must be at least 4 characters long.');
       return;
     }
 
-    // Verify against database/allowlist
-    const verification = await verifyUserEmail(email);
+    // Verify against database/allowlist (pass preferred role from tab)
+    const verification = await verifyUserEmail(email, role);
     if (!verification.approved) {
-      setLoginError(verification.message || 'Access Denied: Your email is not registered in the approved college roster. Please contact Ganesh Sir (Lead Placement Mentor) or the College Placement Cell to request access.');
+      setLoginError(verification.message || 'Access Denied.');
       return;
     }
 
@@ -144,12 +148,13 @@ export const AuthAndOnboarding: React.FC<AuthAndOnboardingProps> = ({
     localStorage.setItem('elite_track_auth', 'authenticated');
     localStorage.setItem('elite_track_role', assignedRole);
     localStorage.setItem('elite_track_email', email);
+    localStorage.setItem('elite_track_name', verification.name || email.split('@')[0]);
 
     onTriggerToast(
       'success',
-      assignedRole === 'student' ? 'Welcome back, Ananya!' : `Welcome, ${verification.name || 'Faculty Member'}!`,
+      `Welcome, ${verification.name || email.split('@')[0]}!`,
       assignedRole === 'student'
-        ? 'Your coding profiles were synced 14 minutes ago.'
+        ? 'Your coding workspace is ready.'
         : 'Consolidated batch overview for all 17 students is ready.'
     );
     onNavigateAuth('authenticated');

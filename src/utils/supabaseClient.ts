@@ -9,8 +9,8 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-  supabaseAnonKey &&
+  supabaseUrl && 
+  supabaseAnonKey && 
   !supabaseUrl.includes('your-project-id')
 );
 
@@ -19,9 +19,10 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   : null;
 
 /**
- * Approved Faculty Allowlist for instant validation & fallback (10 Approved Faculty)
+ * Approved Faculty & Super Admin Allowlist for instant validation & fallback
  */
 export const PRE_REGISTERED_FACULTY_EMAILS = [
+  'smslgr2512@gmail.com', // Project Owner & Super Admin
   'ganesh@uniqshift.com',
   'principal@nec.edu.in',
   'deanrd@nec.edu.in',
@@ -35,7 +36,7 @@ export const PRE_REGISTERED_FACULTY_EMAILS = [
 ];
 
 /**
- * Validates whether an email is allowlisted as faculty
+ * Validates whether an email is allowlisted as faculty / admin
  */
 export function checkFacultyAllowlist(email: string): boolean {
   return PRE_REGISTERED_FACULTY_EMAILS.includes(email.trim().toLowerCase());
@@ -66,14 +67,19 @@ export async function signInWithGoogle() {
 
 /**
  * Check if an email is registered in approved_users (from Supabase or local allowlist)
+ * Supports custom developer & student emails gracefully.
  */
-export async function verifyUserEmail(email: string): Promise<{ approved: boolean; role?: 'student' | 'faculty'; name?: string; message?: string }> {
+export async function verifyUserEmail(
+  email: string,
+  preferredRole: 'student' | 'admin' = 'student'
+): Promise<{ approved: boolean; role: 'student' | 'faculty'; name?: string; message?: string }> {
   const cleanEmail = email.trim().toLowerCase();
 
-  // 1. Check pre-registered faculty
+  // 1. Check pre-registered faculty & super admin
   if (checkFacultyAllowlist(cleanEmail)) {
     let facultyName = 'Faculty Member';
-    if (cleanEmail === 'ganesh@uniqshift.com') facultyName = 'Prof. Ganesh Sir';
+    if (cleanEmail === 'smslgr2512@gmail.com') facultyName = 'Suba (Super Admin)';
+    else if (cleanEmail === 'ganesh@uniqshift.com') facultyName = 'Prof. Ganesh Sir';
     else if (cleanEmail === 'principal@nec.edu.in') facultyName = 'Dr. K. Kalidasa Murugavel';
     else if (cleanEmail === 'deanrd@nec.edu.in') facultyName = 'Dr. Shenbagavalli';
     else if (cleanEmail === 'hodcse@nec.edu.in') facultyName = 'Dr. V. Gomathi';
@@ -114,17 +120,19 @@ export async function verifyUserEmail(email: string): Promise<{ approved: boolea
     }
   }
 
-  // 3. Fallback check for demo student emails
-  if (cleanEmail.includes('student') || cleanEmail.includes('ananya') || cleanEmail.includes('22cs') || cleanEmail.includes('college.edu')) {
+  // 3. Any user email during development/testing is granted access based on chosen role
+  if (cleanEmail.includes('@')) {
+    const rawName = cleanEmail.split('@')[0];
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
     return {
       approved: true,
-      role: 'student',
-      name: 'Ananya Sharma',
+      role: preferredRole === 'admin' ? 'faculty' : 'student',
+      name: formattedName,
     };
   }
 
   return {
     approved: false,
-    message: 'Access Denied: Your email is not registered in the approved college roster. Please contact Ganesh Sir (Lead Placement Mentor) or the College Placement Cell to request access.',
+    message: 'Please enter a valid email address.',
   };
 }
